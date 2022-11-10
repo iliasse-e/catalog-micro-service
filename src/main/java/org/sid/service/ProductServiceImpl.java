@@ -6,10 +6,13 @@ import org.sid.dto.CategoryDTO;
 import org.sid.dto.ProductDTO;
 import org.sid.entities.category.Category;
 import org.sid.entities.product.Product;
+import org.sid.mappers.CategoryMapper;
+import org.sid.mappers.ProductMapper;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,38 +21,47 @@ public class ProductServiceImpl implements ProductService {
 
 	private ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
+	private ProductMapper productMapper;
 
-	public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+	public ProductServiceImpl(
+			ProductRepository productRepository,
+			CategoryRepository categoryRepository,
+			ProductMapper productMapper
+	) {
 		this.productRepository = productRepository;
 		this.categoryRepository = categoryRepository;
+		this.productMapper = productMapper;
 	}
 
 	@Override
-	public ProductDTO save(ProductDTO productRequestDTO) {
+	public ProductDTO save(ProductDTO productDTO) {
 		// TODO Auto-generated method stub
-		Category category = categoryRepository.findByName(productRequestDTO.getCategory().getName());
+		System.out.println(productDTO);
 
-		Product product = productRequestDTOToProduct(productRequestDTO,category);
-		Product savedProduct = productRepository.save(product);
-		ProductDTO productResponseDTO = productToProductResponseDTO(savedProduct);
-		
-		return productResponseDTO;
+		Product newProduct = productMapper.productDTOToProduct(productDTO);
+		System.out.println(newProduct);
+		Product savedProduct = productRepository.save(newProduct);
+
+		return productMapper.productToProductDTO(savedProduct);
 	}
 
 	@Override
-	public ProductDTO getProduct(Long productId) {
+	public ProductDTO getProduct(String designation) {
 		// TODO Auto-generated method stub
-		Product product = productRepository.findById(productId).get();
-		return productToProductResponseDTO(product);
+		Product product = productRepository.findByDesignation(designation);
+		return productMapper.productToProductDTO(product);
 	}
 
 	@Override
-	public ProductDTO update(ProductDTO productRequestDTO) {
-		// TODO Auto-generated method stub
-		Category category = categoryRepository.findByName(productRequestDTO.getCategory().getName());
-		Product product = productRequestDTOToProduct(productRequestDTO,category);
-		Product updatedProduct = productRepository.save(product);
-		return productToProductResponseDTO(updatedProduct);
+	public ProductDTO update(ProductDTO updatedProduct, String designation) {
+		// get product from repo
+		Product product = productRepository.findByDesignation(designation);
+		// set new data
+		product.setDesignation(updatedProduct.getDesignation());
+		product.setPrice(updatedProduct.getPrice());
+		product.setQuantity(updatedProduct.getQuantity());
+		product.setDimensions(updatedProduct.getDimensions());
+		return productMapper.productToProductDTO(product);
 	}
 
 	@Override
@@ -58,36 +70,35 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> listProducts = productRepository.findAll();
 		List<ProductDTO> listProductResponseDTOs = listProducts
 				.stream()
-				.map(p -> productToProductResponseDTO(p))
+				.map(p -> productMapper.productToProductDTO(p))
 				.collect(Collectors.toList());
 		return listProductResponseDTOs;
 	}
 
 	@Override
-	public void delete(Long productId) {
+	public void delete(String designation) {
 		// TODO Auto-generated method stub
-		productRepository.deleteById(productId);
-		
+		productRepository.deleteByDesignation(designation);
 	}
 
-	private Product productRequestDTOToProduct(ProductDTO productRequestDTO,Category category) {
-		// TODO Auto-generated method stub
-		Product product = new Product();
-		product.setDesignation(productRequestDTO.getDesignation());
-		product.setPrice(productRequestDTO.getPrice());
-		product.setQuantity(productRequestDTO.getQuantity());
-		product.setDimensions(productRequestDTO.getDimensions());
-		product.setCategory(category);
-		return product;
-	}
-
-	public ProductDTO productToProductResponseDTO(Product product) {
-		// TODO Auto-generated method stub
-		String designation = product.getDesignation();
-		int price = product.getPrice();
-		int quantity = product.getQuantity();
-		String dimensions = product.getDimensions();
-		String categoryName = product.getCategory().getName();
-		return new ProductDTO(designation, price, quantity, dimensions, new CategoryDTO(categoryName));
-	}
+//	private Product productRequestDTOToProduct(ProductDTO productRequestDTO,Category category) {
+//		// TODO Auto-generated method stub
+//		Product product = new Product();
+//		product.setDesignation(productRequestDTO.getDesignation());
+//		product.setPrice(productRequestDTO.getPrice());
+//		product.setQuantity(productRequestDTO.getQuantity());
+//		product.setDimensions(productRequestDTO.getDimensions());
+//		product.setCategory(category);
+//		return product;
+//	}
+//
+//	public ProductDTO productToProductResponseDTO(Product product) {
+//		// TODO Auto-generated method stub
+//		String designation = product.getDesignation();
+//		int price = product.getPrice();
+//		int quantity = product.getQuantity();
+//		String dimensions = product.getDimensions();
+//		String categoryName = product.getCategory().getName();
+//		return new ProductDTO(null, designation, price, quantity, dimensions, new CategoryDTO(categoryName));
+//	}
 }

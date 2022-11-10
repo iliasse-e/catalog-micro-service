@@ -8,6 +8,6 @@ import org.springframework.data.repository.CrudRepository;
 
 //@RepositoryRestResource
 public interface ProductRepository extends JpaRepository<Product, Long>, CrudRepository<Product, Long> {
-	
-	public List<Product> findByDesignation(String designation);
+	public Product findByDesignation(String designation);
+	public void deleteByDesignation(String designation);
 }

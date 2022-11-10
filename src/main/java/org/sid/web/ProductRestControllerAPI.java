@@ -8,16 +8,10 @@ import org.sid.dto.ProductDTO;
 import org.sid.entities.category.Category;
 import org.sid.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/products")
 public class ProductRestControllerAPI {
 	
@@ -32,24 +26,24 @@ public class ProductRestControllerAPI {
 		return productService.listProducts();
 	}
 	
-	@GetMapping("/{id}")
-	public ProductDTO getOne(@PathVariable Long id) {
-		return productService.getProduct(id);
+	@GetMapping("/{designation}")
+	public ProductDTO getOne(@PathVariable String designation) {
+		return productService.getProduct(designation);
 	}
 	
 	@PostMapping
-	public ProductDTO save(@RequestBody ProductCreationInput p) {
+	public ProductDTO save(@RequestBody ProductDTO p) {
 		//check if category exists in data base
-		return productService.save(p.ToProductRequestDTO());
+		return productService.save(p);
 	}
 	
-	@PutMapping("/{id}")
-	public ProductDTO update(@RequestBody ProductDTO p,@PathVariable Long id) {
-		return productService.update(p);
+	@PutMapping("/{designation}")
+	public ProductDTO update(@RequestBody ProductDTO p,@PathVariable String designation) {
+		return productService.update(p, designation);
 	}
 	
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		productService.delete(id);
+	@DeleteMapping("/{designation}")
+	public void delete(@PathVariable String designation) {
+		productService.delete(designation);
 	}
 }
